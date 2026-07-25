@@ -1,9 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Users, Monitor, User } from 'lucide-react';
 
 export default function LimbagSyncPortal() {
+  const router = useRouter();
   const [selectedPortal, setSelectedPortal] = useState<string | null>(null);
 
   const portals = [
@@ -57,7 +59,14 @@ export default function LimbagSyncPortal() {
         </div>
 
         {selectedPortal && (
-          <button className="w-full mt-10 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 rounded-xl transition-colors duration-200 text-lg">
+          <button
+            onClick={() => {
+              if (selectedPortal === 'customer') {
+                router.push('/customer');
+              }
+            }}
+            className="w-full mt-10 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 rounded-xl transition-colors duration-200 text-lg"
+          >
             Continue to {portals.find((p) => p.id === selectedPortal)?.title}
           </button>
         )}
