@@ -14,6 +14,8 @@ export default function CustomerPortal() {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [paymentFile, setPaymentFile] = useState<UploadedFile | null>(null);
   const [isDragActive, setIsDragActive] = useState(false);
+  const [orderSubmitted, setOrderSubmitted] = useState(false);
+  const [orderId, setOrderId] = useState<string>('');
 
   const [formData, setFormData] = useState({
     name: '',
@@ -92,6 +94,12 @@ export default function CustomerPortal() {
   };
 
   const total = 2.0;
+
+  const handleSubmitOrder = () => {
+    const newOrderId = `#ORD-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
+    setOrderId(newOrderId);
+    setOrderSubmitted(true);
+  };
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -394,10 +402,33 @@ export default function CustomerPortal() {
               </div>
 
               {/* Submit Button */}
-              <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-lg transition-colors text-lg">
+              <button
+                onClick={handleSubmitOrder}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-lg transition-colors text-lg"
+              >
                 Submit Order
               </button>
             </div>
+          </div>
+        )}
+
+        {/* Success Message */}
+        {orderSubmitted && (
+          <div className="mt-8 space-y-4">
+            <div className="bg-green-200 border border-green-300 rounded-2xl p-8 text-center max-w-2xl mx-auto">
+              <p className="text-gray-900 font-bold text-lg leading-relaxed">
+                Thank you for your order! <span className="underline">Your Order ID is {orderId}. Please save this ID.</span>
+              </p>
+              <p className="text-gray-900 font-semibold text-base mt-4">
+                Your order is currently <span className="font-bold">Pending</span> until the owner verifies your GCash payment.
+              </p>
+              <p className="text-gray-900 font-semibold text-base mt-2">
+                Use the Order History tab to track your status, using your order ID.
+              </p>
+            </div>
+            <p className="text-center text-red-600 font-bold text-base">
+              DO NOT REFRESH THIS SITE UNTIL YOU HAVE SAVED YOUR ORDER ID
+            </p>
           </div>
         )}
 
