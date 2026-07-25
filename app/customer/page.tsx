@@ -16,6 +16,7 @@ export default function CustomerPortal() {
   const [isDragActive, setIsDragActive] = useState(false);
   const [orderSubmitted, setOrderSubmitted] = useState(false);
   const [orderId, setOrderId] = useState<string>('');
+  const [showNotificationModal, setShowNotificationModal] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -96,6 +97,11 @@ export default function CustomerPortal() {
   const total = 2.0;
 
   const handleSubmitOrder = () => {
+    setShowNotificationModal(true);
+  };
+
+  const handleNotificationResponse = (allowed: boolean) => {
+    setShowNotificationModal(false);
     const newOrderId = `#ORD-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
     setOrderId(newOrderId);
     setOrderSubmitted(true);
@@ -118,6 +124,34 @@ export default function CustomerPortal() {
           </button>
         </div>
       </div>
+
+      {/* Notification Permission Modal */}
+      {showNotificationModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Allow LimbagSync to send you notifications?
+            </h2>
+            <p className="text-gray-700 text-base leading-relaxed mb-8">
+              This is for updating you regarding the status of your order, even when you&apos;re in another tab (just don&apos;t close our tab)
+            </p>
+            <div className="space-y-3">
+              <button
+                onClick={() => handleNotificationResponse(true)}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-colors"
+              >
+                Allow push notifications
+              </button>
+              <button
+                onClick={() => handleNotificationResponse(false)}
+                className="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-3 rounded-lg transition-colors"
+              >
+                No thanks
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-12">
