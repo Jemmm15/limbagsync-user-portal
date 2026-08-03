@@ -9,6 +9,18 @@ interface UploadedFile {
   name: string;
 }
 
+interface Order {
+  id: string;
+  date: string;
+  category: string;
+  copies: number;
+  color: string;
+  status: 'Pending' | 'Verified' | 'Processing' | 'Ready for Pickup';
+  total: number;
+  name: string;
+  phone: string;
+}
+
 export default function CustomerPortal() {
   const [activeTab, setActiveTab] = useState<'order' | 'history'>('order');
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
@@ -17,6 +29,7 @@ export default function CustomerPortal() {
   const [orderSubmitted, setOrderSubmitted] = useState(false);
   const [orderId, setOrderId] = useState<string>('');
   const [showNotificationModal, setShowNotificationModal] = useState(false);
+  const [orders, setOrders] = useState<Order[]>([]);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -104,6 +117,20 @@ export default function CustomerPortal() {
     setShowNotificationModal(false);
     const newOrderId = `#ORD-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
     setOrderId(newOrderId);
+    
+    // Add new order to orders list
+    const newOrder: Order = {
+      id: newOrderId,
+      date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+      category: formData.category,
+      copies: formData.copies,
+      color: formData.color,
+      status: 'Pending',
+      total: 2.0,
+      name: formData.name,
+      phone: formData.phone,
+    };
+    setOrders((prev) => [newOrder, ...prev]);
     setOrderSubmitted(true);
   };
 
@@ -468,7 +495,57 @@ export default function CustomerPortal() {
 
         {activeTab === 'history' && (
           <div className="bg-white rounded-2xl p-8 border border-gray-200">
-            <p className="text-gray-600 text-lg">Your order history will appear here.</p>
+            {orders.length === 0 ? (
+              <p className="text-gray-600 text-lg">Your order history will appear here.</p>
+            ) : (
+              <div className="space-y-4">
+                {orders.map((order) => {
+                  const statusColors = {
+                    'Pending': 'bg-yellow-100 text-yellow-800 border-yellow-300',
+                    'Verified': 'bg-blue-100 text-blue-800 border-blue-300',
+                    'Processing': 'bg-purple-100 text-purple-800 border-purple-300',
+                    'Ready for Pickup': 'bg-green-100 text-green-800 border-green-300',
+                  };
+                  return (
+                    <div key={order.id} className="border border-gray-300 rounded-xl p-6 hover:shadow-lg transition-shadow">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <h3 className="text-xl font-bold text-gray-900">{order.id}</h3>
+                          <p className="text-gray-600 text-sm">{order.date}</p>
+                        </div>
+                        <span className={`px-4 py-2 rounded-full font-semibold text-sm border ${statusColors[order.status]}`}>
+                          {order.status}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                          <p className="text-gray-600 text-sm">Category</p>
+                          <p className="text-gray-900 font-semibold">{order.category}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600 text-sm">Copies</p>
+                          <p className="text-gray-900 font-semibold">{order.copies}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600 text-sm">Color</p>
+                          <p className="text-gray-900 font-semibold">{order.color}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600 text-sm">Total</p>
+                          <p className="text-gray-900 font-semibold">₱{order.total.toFixed(2)}</p>
+                        </div>
+                      </div>
+
+                      <div className="border-t border-gray-200 pt-4">
+                        <p className="text-gray-600 text-sm mb-1">Customer Name: <span className="text-gray-900 font-semibold">{order.name}</span></p>
+                        <p className="text-gray-600 text-sm">Contact: <span className="text-gray-900 font-semibold">{order.phone}</span></p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
       </div>
