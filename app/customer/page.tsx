@@ -30,6 +30,9 @@ export default function CustomerPortal() {
   const [orderId, setOrderId] = useState<string>('');
   const [showNotificationModal, setShowNotificationModal] = useState(false);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [searchOrderId, setSearchOrderId] = useState<string>('');
+  const [searchContact, setSearchContact] = useState<string>('');
+  const [trackedOrder, setTrackedOrder] = useState<Order | null>(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -111,6 +114,13 @@ export default function CustomerPortal() {
 
   const handleSubmitOrder = () => {
     setShowNotificationModal(true);
+  };
+
+  const handleTrackOrder = () => {
+    const found = orders.find(
+      (order) => order.id === searchOrderId && (order.phone === searchContact || order.name === searchContact)
+    );
+    setTrackedOrder(found || null);
   };
 
   const handleNotificationResponse = (allowed: boolean) => {
@@ -494,56 +504,134 @@ export default function CustomerPortal() {
         )}
 
         {activeTab === 'history' && (
-          <div className="bg-white rounded-2xl p-8 border border-gray-200">
-            {orders.length === 0 ? (
-              <p className="text-gray-600 text-lg">Your order history will appear here.</p>
-            ) : (
+          <div className="space-y-6">
+            {/* Search Section */}
+            <div className="bg-white rounded-2xl p-8 border border-gray-200">
+              <div className="flex items-center gap-2 mb-6">
+                <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <h3 className="text-2xl font-bold text-gray-900">Find Your Order</h3>
+              </div>
+              <p className="text-gray-500 text-base mb-6">
+                Enter your Order ID and the contact information you used during checkout to track your order status.
+              </p>
+
               <div className="space-y-4">
-                {orders.map((order) => {
-                  const statusColors = {
-                    'Pending': 'bg-yellow-100 text-yellow-800 border-yellow-300',
-                    'Verified': 'bg-blue-100 text-blue-800 border-blue-300',
-                    'Processing': 'bg-purple-100 text-purple-800 border-purple-300',
-                    'Ready for Pickup': 'bg-green-100 text-green-800 border-green-300',
-                  };
-                  return (
-                    <div key={order.id} className="border border-gray-300 rounded-xl p-6 hover:shadow-lg transition-shadow">
-                      <div className="flex justify-between items-start mb-4">
-                        <div>
-                          <h3 className="text-xl font-bold text-gray-900">{order.id}</h3>
-                          <p className="text-gray-600 text-sm">{order.date}</p>
-                        </div>
-                        <span className={`px-4 py-2 rounded-full font-semibold text-sm border ${statusColors[order.status]}`}>
-                          {order.status}
-                        </span>
-                      </div>
+                <div>
+                  <label className="text-gray-700 font-semibold text-sm mb-2 block">Order ID</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. ORD-0404"
+                    value={searchOrderId}
+                    onChange={(e) => setSearchOrderId(e.target.value.toUpperCase())}
+                    className="w-full px-4 py-3 rounded-lg bg-gray-100 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
 
-                      <div className="grid grid-cols-2 gap-4 mb-4">
-                        <div>
-                          <p className="text-gray-600 text-sm">Category</p>
-                          <p className="text-gray-900 font-semibold">{order.category}</p>
-                        </div>
-                        <div>
-                          <p className="text-gray-600 text-sm">Copies</p>
-                          <p className="text-gray-900 font-semibold">{order.copies}</p>
-                        </div>
-                        <div>
-                          <p className="text-gray-600 text-sm">Color</p>
-                          <p className="text-gray-900 font-semibold">{order.color}</p>
-                        </div>
-                        <div>
-                          <p className="text-gray-600 text-sm">Total</p>
-                          <p className="text-gray-900 font-semibold">₱{order.total.toFixed(2)}</p>
-                        </div>
-                      </div>
+                <div>
+                  <label className="text-gray-700 font-semibold text-sm mb-2 block">Contact Info</label>
+                  <input
+                    type="text"
+                    placeholder="Phone or Email"
+                    value={searchContact}
+                    onChange={(e) => setSearchContact(e.target.value)}
+                    className="w-full px-4 py-3 rounded-lg bg-gray-100 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
 
-                      <div className="border-t border-gray-200 pt-4">
-                        <p className="text-gray-600 text-sm mb-1">Customer Name: <span className="text-gray-900 font-semibold">{order.name}</span></p>
-                        <p className="text-gray-600 text-sm">Contact: <span className="text-gray-900 font-semibold">{order.phone}</span></p>
-                      </div>
+                <button
+                  onClick={handleTrackOrder}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-colors flex items-center justify-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>
+                  Track Order
+                </button>
+              </div>
+            </div>
+
+            {/* Order Details Section */}
+            {trackedOrder && (
+              <div className="bg-white rounded-2xl p-8 border border-gray-200">
+                <div className="flex items-center justify-between mb-8">
+                  <h3 className="text-2xl font-bold text-gray-900">Order Details</h3>
+                  <span className="text-blue-600 font-bold text-lg">{trackedOrder.id}</span>
+                </div>
+
+                {/* Timeline */}
+                <div className="mb-8">
+                  <div className="flex items-center justify-between mb-6">
+                    {['Verified', 'Printing', 'Ready', 'Complete'].map((stage, idx) => {
+                      const stages = ['Verified', 'Printing', 'Ready', 'Complete'];
+                      const currentIdx = stages.indexOf(trackedOrder.status);
+                      const isCompleted = idx <= (trackedOrder.status === 'Ready for Pickup' ? 2 : currentIdx);
+                      const isCurrent = idx === currentIdx + 1 || (trackedOrder.status === 'Ready for Pickup' && idx === 2);
+
+                      return (
+                        <div key={stage} className="flex flex-col items-center">
+                          <div
+                            className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm mb-2 transition-all ${
+                              isCompleted
+                                ? 'bg-blue-600 text-white'
+                                : isCurrent
+                                ? 'bg-blue-200 text-blue-600 border-2 border-blue-600'
+                                : 'bg-gray-200 text-gray-400'
+                            }`}
+                          >
+                            {isCompleted ? '✓' : idx + 1}
+                          </div>
+                          <p className="text-xs font-semibold text-gray-700 text-center">{stage}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Connecting line */}
+                  <div className="flex justify-between px-1 mb-6">
+                    {[0, 1, 2].map((i) => (
+                      <div key={i} className="flex-1 h-0.5 bg-gray-300 mx-1"></div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Status Message */}
+                <div className="mb-6">
+                  {trackedOrder.status === 'Pending' && (
+                    <p className="text-gray-600 text-center font-semibold">Awaiting Owner&apos;s approval...</p>
+                  )}
+                  {trackedOrder.status === 'Verified' && (
+                    <div className="bg-green-100 border border-green-300 rounded-lg p-3 text-center">
+                      <p className="text-green-800 font-semibold">Your order has been approved!</p>
                     </div>
-                  );
-                })}
+                  )}
+                  {trackedOrder.status === 'Processing' && (
+                    <div className="bg-purple-100 border border-purple-300 rounded-lg p-3 text-center">
+                      <p className="text-purple-800 font-semibold">Your order is being processed...</p>
+                    </div>
+                  )}
+                  {trackedOrder.status === 'Ready for Pickup' && (
+                    <div className="bg-blue-100 border border-blue-300 rounded-lg p-3 text-center">
+                      <p className="text-blue-800 font-semibold">Your order is ready for pickup!</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Order Info */}
+                <div className="border-t border-gray-200 pt-4 space-y-2">
+                  <p className="text-gray-600 text-sm"><span className="font-semibold">Category:</span> {trackedOrder.category}</p>
+                  <p className="text-gray-600 text-sm"><span className="font-semibold">Copies:</span> {trackedOrder.copies}</p>
+                  <p className="text-gray-600 text-sm"><span className="font-semibold">Color:</span> {trackedOrder.color}</p>
+                  <p className="text-gray-600 text-sm"><span className="font-semibold">Total:</span> ₱{trackedOrder.total.toFixed(2)}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Not Found Message */}
+            {searchOrderId && !trackedOrder && (
+              <div className="bg-red-100 border border-red-300 rounded-2xl p-6">
+                <p className="text-red-800 font-semibold text-center">No order found. Please check your Order ID and contact information.</p>
               </div>
             )}
           </div>
