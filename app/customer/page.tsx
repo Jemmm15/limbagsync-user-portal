@@ -567,15 +567,15 @@ export default function CustomerPortal() {
 
             {/* Order Details Section */}
             {trackedOrder && (
-              <div className="bg-white rounded-3xl p-6 border-4 border-purple-400 border-dashed">
+              <div className="bg-white rounded-2xl p-6 border-4 border-indigo-300 border-dashed">
                 {/* Header */}
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between mb-6">
                   <h3 className="text-lg font-bold text-gray-900">Order Details</h3>
-                  <span className="text-blue-600 font-bold text-sm">{trackedOrder.id}</span>
+                  <span className="text-indigo-600 font-bold text-sm">{trackedOrder.id}</span>
                 </div>
 
                 {/* Timeline */}
-                <div className="flex items-center justify-between mb-6 px-2">
+                <div className="flex items-center justify-between mb-6">
                   {['Verified', 'Printing', 'Ready', 'Complete'].map((stage, idx) => {
                     const statusMap: {[key: string]: number} = {
                       'Pending': -1,
@@ -586,33 +586,49 @@ export default function CustomerPortal() {
                       'Delivered': 3,
                     };
                     const currentIdx = statusMap[trackedOrder.status] ?? -1;
-                    const isCompleted = idx <= currentIdx;
-                    const isCurrent = Math.floor(currentIdx) === idx;
+                    const isCompleted = idx < currentIdx;
+                    const isCurrent = Math.floor(currentIdx) === idx && currentIdx >= 0;
+                    const isUpcoming = idx > currentIdx || currentIdx < 0;
+
+                    // Icons for each stage
+                    const stageIcons: {[key: string]: string} = {
+                      'Verified': 'M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z',
+                      'Printing': 'M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4H9m4 0h4m-11-8v3m8-3v3',
+                      'Ready': 'M9 12l2 2 4-4',
+                      'Complete': 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
+                    };
 
                     return (
                       <div key={stage} className="flex flex-col items-center flex-1">
                         <div
-                          className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs mb-2 transition-all flex-shrink-0 border-2 ${
+                          className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 flex-shrink-0 border-2 transition-all ${
                             isCompleted
-                              ? 'bg-blue-600 text-white border-blue-600'
+                              ? 'bg-indigo-600 border-indigo-600'
                               : isCurrent
-                              ? 'bg-white text-blue-600 border-blue-600'
-                              : 'bg-white text-gray-400 border-gray-300'
+                              ? 'bg-white border-indigo-600'
+                              : 'bg-white border-gray-300'
                           }`}
                         >
-                          {isCompleted ? '✓' : '○'}
+                          <svg
+                            className={`w-5 h-5 ${
+                              isCompleted
+                                ? 'text-white'
+                                : isCurrent
+                                ? 'text-indigo-600'
+                                : 'text-gray-400'
+                            }`}
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            strokeWidth={2}
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" d={stageIcons[stage]} />
+                          </svg>
                         </div>
                         <p className="text-xs font-semibold text-gray-700 text-center">{stage}</p>
                       </div>
                     );
                   })}
-                </div>
-
-                {/* Connecting line under timeline */}
-                <div className="flex justify-between px-2 mb-6 gap-1">
-                  {[0, 1, 2].map((i) => (
-                    <div key={i} className="flex-1 h-0.5 bg-gray-300"></div>
-                  ))}
                 </div>
 
                 {/* Only show details if order is not in Pending status */}
@@ -621,11 +637,11 @@ export default function CustomerPortal() {
                     {/* Two Column Layout */}
                     <div className="grid grid-cols-2 gap-4 mb-6">
                       {/* Left Column - Print Job Specifications */}
-                      <div className="border-l-4 border-blue-600 pl-4 py-3">
+                      <div className="border-l-4 border-indigo-600 pl-3 py-2">
                         <h4 className="text-sm font-bold text-gray-900 mb-3">Print Job Specifications</h4>
                         <div className="space-y-2">
                           <div className="flex items-start gap-2">
-                            <svg className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <svg className="w-4 h-4 text-indigo-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                               <path d="M4 4a2 2 0 012-2h6a2 2 0 012 2v12a1 1 0 100 2h-3.5a1 1 0 00-.823.413l-.5.667-.5-.667A1 1 0 006.5 18H3a1 1 0 100-2V4z"></path>
                             </svg>
                             <div>
@@ -642,23 +658,23 @@ export default function CustomerPortal() {
                       </div>
 
                       {/* Right Column - Fulfillment Details */}
-                      <div className="border-l-4 border-blue-600 pl-4 py-3">
+                      <div className="border-l-4 border-indigo-600 pl-3 py-2">
                         <h4 className="text-sm font-bold text-gray-900 mb-3">Fulfillment Details</h4>
                         <div className="space-y-2 text-xs">
-                          <div className="flex justify-between">
+                          <div className="flex justify-between items-start">
                             <span className="font-semibold text-gray-900">Method</span>
-                            <span className="text-blue-600 font-semibold">{trackedOrder.fulfillmentMethod}</span>
+                            <span className="text-indigo-600 font-semibold">{trackedOrder.fulfillmentMethod}</span>
                           </div>
-                          <div className="flex justify-between">
+                          <div className="flex justify-between items-start">
                             <span className="font-semibold text-gray-900">Branch</span>
                             <span className="text-gray-600">{trackedOrder.branch}</span>
                           </div>
-                          <div className="flex justify-between">
-                            <span className="font-semibold text-gray-900">Preferred Pick-up Time</span>
-                            <span className="text-gray-600">{trackedOrder.preferredPickupTime}</span>
+                          <div>
+                            <p className="font-semibold text-gray-900">Preferred Pick-up Time</p>
+                            <p className="text-gray-600">{trackedOrder.preferredPickupTime}</p>
                           </div>
                           {['In Transit', 'Delivered'].includes(trackedOrder.status) && (
-                            <button className="text-blue-600 hover:text-blue-700 font-semibold text-xs mt-2 underline">
+                            <button className="text-indigo-600 hover:text-indigo-700 font-semibold text-xs mt-2 underline">
                               View courier tracking
                             </button>
                           )}
@@ -666,32 +682,25 @@ export default function CustomerPortal() {
                       </div>
                     </div>
 
-                    {/* Status Badge */}
-                    <div className="rounded-lg p-3 font-semibold text-white text-sm text-center">
-                      {trackedOrder.status === 'Verified' && (
-                        <div className="bg-blue-600">Waiting for Branch Staff</div>
-                      )}
-                      {trackedOrder.status === 'Processing' && (
-                        <div className="bg-blue-600">Order has been Printed, now preparing for Pick-up/Delivery</div>
-                      )}
-                      {trackedOrder.status === 'Ready for Pickup' && (
-                        <div className="bg-blue-600">Order is now in transit for delivery / ready for pick-up.</div>
-                      )}
-                      {trackedOrder.status === 'In Transit' && (
-                        <div className="bg-blue-600">Order is now in transit for delivery / ready for pick-up.</div>
-                      )}
-                      {trackedOrder.status === 'Delivered' && (
-                        <div className="bg-green-600">Order has been successfully delivered / picked up.</div>
-                      )}
+                    {/* Status Banner */}
+                    <div
+                      className={`rounded-lg p-3 font-bold text-white text-sm text-center ${
+                        trackedOrder.status === 'Delivered' ? 'bg-green-600' : 'bg-indigo-600'
+                      }`}
+                    >
+                      <span className="underline">
+                        {trackedOrder.status === 'Verified' && 'Waiting for Branch Staff'}
+                        {trackedOrder.status === 'Processing' && 'Order has been Printed, now preparing for Pick-up/Delivery'}
+                        {trackedOrder.status === 'Ready for Pickup' && 'Order is now in transit for delivery / ready for pick-up.'}
+                        {trackedOrder.status === 'In Transit' && 'Order is now in transit for delivery / ready for pick-up.'}
+                        {trackedOrder.status === 'Delivered' && 'Order has been successfully delivered / picked up.'}
+                      </span>
                     </div>
                   </>
                 ) : (
                   <>
                     {/* Pending Status */}
-                    <p className="text-gray-600 text-center text-sm font-medium mb-4">Awaiting Owner&apos;s approval...</p>
-                    <div className="bg-green-200 border border-green-300 rounded-lg p-3 text-center">
-                      <p className="text-green-800 font-semibold text-sm">Your order has been approved!</p>
-                    </div>
+                    <p className="text-gray-600 text-center text-sm font-medium">Awaiting Owner&apos;s approval...</p>
                   </>
                 )}
               </div>
