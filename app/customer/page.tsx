@@ -15,10 +15,15 @@ interface Order {
   category: string;
   copies: number;
   color: string;
-  status: 'Pending' | 'Verified' | 'Processing' | 'Ready for Pickup';
+  status: 'Pending' | 'Verified' | 'Processing' | 'Ready for Pickup' | 'In Transit' | 'Delivered';
   total: number;
   name: string;
   phone: string;
+  fileName: string;
+  fileSize: string;
+  fulfillmentMethod: 'Pickup' | 'Delivery';
+  branch: string;
+  preferredPickupTime: string;
 }
 
 export default function CustomerPortal() {
@@ -139,6 +144,11 @@ export default function CustomerPortal() {
       total: 2.0,
       name: formData.name,
       phone: formData.phone,
+      fileName: uploadedFiles[0]?.name || 'filename.docx',
+      fileSize: uploadedFiles[0]?.name ? '2.4 MB' : '0 MB',
+      fulfillmentMethod: formData.fulfillment as 'Pickup' | 'Delivery',
+      branch: 'Branch 1',
+      preferredPickupTime: formData.pickupTime,
     };
     setOrders((prev) => [newOrder, ...prev]);
     setOrderSubmitted(true);
@@ -557,77 +567,133 @@ export default function CustomerPortal() {
 
             {/* Order Details Section */}
             {trackedOrder && (
-              <div className="bg-white rounded-3xl p-6 border border-gray-200">
-                <div className="flex items-center justify-between mb-6">
+              <div className="bg-white rounded-3xl p-6 border-4 border-purple-400 border-dashed">
+                {/* Header */}
+                <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-bold text-gray-900">Order Details</h3>
-                  <span className="text-blue-600 font-bold">{trackedOrder.id}</span>
+                  <span className="text-blue-600 font-bold text-sm">{trackedOrder.id}</span>
                 </div>
 
                 {/* Timeline */}
-                <div className="mb-6 border border-gray-300 rounded-2xl p-5">
-                  <div className="flex items-end justify-between mb-4">
-                    {['Verified', 'Printing', 'Ready', 'Complete'].map((stage, idx) => {
-                      const stages = ['Verified', 'Printing', 'Ready', 'Complete'];
-                      const statusMap: {[key: string]: number} = {
-                        'Pending': -1,
-                        'Verified': 0,
-                        'Processing': 1,
-                        'Ready for Pickup': 2,
-                        'Complete': 3,
-                      };
-                      const currentIdx = statusMap[trackedOrder.status] ?? -1;
-                      const isCompleted = idx <= currentIdx;
+                <div className="flex items-center justify-between mb-6 px-2">
+                  {['Verified', 'Printing', 'Ready', 'Complete'].map((stage, idx) => {
+                    const statusMap: {[key: string]: number} = {
+                      'Pending': -1,
+                      'Verified': 0,
+                      'Processing': 1,
+                      'Ready for Pickup': 2,
+                      'In Transit': 2.5,
+                      'Delivered': 3,
+                    };
+                    const currentIdx = statusMap[trackedOrder.status] ?? -1;
+                    const isCompleted = idx <= currentIdx;
+                    const isCurrent = Math.floor(currentIdx) === idx;
 
-                      return (
-                        <div key={stage} className="flex flex-col items-center flex-1">
-                          <div
-                            className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs mb-2 transition-all flex-shrink-0 ${
-                              isCompleted
-                                ? 'bg-blue-600 text-white'
-                                : 'bg-gray-300 text-gray-600'
-                            }`}
-                          >
-                            {isCompleted ? '✓' : '○'}
-                          </div>
-                          <svg className="w-0.5 h-6 text-gray-300 my-1" viewBox="0 0 1 100">
-                            <line x1="0.5" y1="0" x2="0.5" y2="100" stroke="currentColor" strokeWidth="0.5" />
-                          </svg>
-                          <p className="text-xs font-semibold text-gray-700 text-center mt-1">{stage}</p>
+                    return (
+                      <div key={stage} className="flex flex-col items-center flex-1">
+                        <div
+                          className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs mb-2 transition-all flex-shrink-0 border-2 ${
+                            isCompleted
+                              ? 'bg-blue-600 text-white border-blue-600'
+                              : isCurrent
+                              ? 'bg-white text-blue-600 border-blue-600'
+                              : 'bg-white text-gray-400 border-gray-300'
+                          }`}
+                        >
+                          {isCompleted ? '✓' : '○'}
                         </div>
-                      );
-                    })}
-                  </div>
-
-                  {/* Status Message */}
-                  <div className="mt-4">
-                    {trackedOrder.status === 'Pending' && (
-                      <p className="text-gray-600 text-center text-xs font-medium">Awaiting Owner&apos;s approval...</p>
-                    )}
-                    {trackedOrder.status === 'Verified' && (
-                      <div className="bg-green-100 border border-green-300 rounded-lg p-2 text-center">
-                        <p className="text-green-800 font-semibold text-xs">Your order has been approved!</p>
+                        <p className="text-xs font-semibold text-gray-700 text-center">{stage}</p>
                       </div>
-                    )}
-                    {trackedOrder.status === 'Processing' && (
-                      <div className="bg-purple-100 border border-purple-300 rounded-lg p-2 text-center">
-                        <p className="text-purple-800 font-semibold text-xs">Your order is being processed...</p>
-                      </div>
-                    )}
-                    {trackedOrder.status === 'Ready for Pickup' && (
-                      <div className="bg-blue-100 border border-blue-300 rounded-lg p-2 text-center">
-                        <p className="text-blue-800 font-semibold text-xs">Your order is ready for pickup!</p>
-                      </div>
-                    )}
-                  </div>
+                    );
+                  })}
                 </div>
 
-                {/* Order Info */}
-                <div className="space-y-1 text-xs">
-                  <p className="text-gray-600"><span className="font-semibold text-gray-900">Category:</span> {trackedOrder.category}</p>
-                  <p className="text-gray-600"><span className="font-semibold text-gray-900">Copies:</span> {trackedOrder.copies}</p>
-                  <p className="text-gray-600"><span className="font-semibold text-gray-900">Color:</span> {trackedOrder.color}</p>
-                  <p className="text-gray-600"><span className="font-semibold text-gray-900">Total:</span> ₱{trackedOrder.total.toFixed(2)}</p>
+                {/* Connecting line under timeline */}
+                <div className="flex justify-between px-2 mb-6 gap-1">
+                  {[0, 1, 2].map((i) => (
+                    <div key={i} className="flex-1 h-0.5 bg-gray-300"></div>
+                  ))}
                 </div>
+
+                {/* Only show details if order is not in Pending status */}
+                {trackedOrder.status !== 'Pending' ? (
+                  <>
+                    {/* Two Column Layout */}
+                    <div className="grid grid-cols-2 gap-4 mb-6">
+                      {/* Left Column - Print Job Specifications */}
+                      <div className="border-l-4 border-blue-600 pl-4 py-3">
+                        <h4 className="text-sm font-bold text-gray-900 mb-3">Print Job Specifications</h4>
+                        <div className="space-y-2">
+                          <div className="flex items-start gap-2">
+                            <svg className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M4 4a2 2 0 012-2h6a2 2 0 012 2v12a1 1 0 100 2h-3.5a1 1 0 00-.823.413l-.5.667-.5-.667A1 1 0 006.5 18H3a1 1 0 100-2V4z"></path>
+                            </svg>
+                            <div>
+                              <p className="text-xs font-semibold text-gray-900">{trackedOrder.fileName}</p>
+                              <p className="text-xs text-gray-600">{trackedOrder.fileSize}</p>
+                            </div>
+                          </div>
+                          <div className="space-y-1 text-xs">
+                            <p><span className="font-semibold text-gray-900">Category</span> <span className="text-gray-600">{trackedOrder.category}</span></p>
+                            <p><span className="font-semibold text-gray-900">Color</span> <span className="text-gray-600">{trackedOrder.color}</span></p>
+                            <p><span className="font-semibold text-gray-900">Copies</span> <span className="text-gray-600">{trackedOrder.copies} copies</span></p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Right Column - Fulfillment Details */}
+                      <div className="border-l-4 border-blue-600 pl-4 py-3">
+                        <h4 className="text-sm font-bold text-gray-900 mb-3">Fulfillment Details</h4>
+                        <div className="space-y-2 text-xs">
+                          <div className="flex justify-between">
+                            <span className="font-semibold text-gray-900">Method</span>
+                            <span className="text-blue-600 font-semibold">{trackedOrder.fulfillmentMethod}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="font-semibold text-gray-900">Branch</span>
+                            <span className="text-gray-600">{trackedOrder.branch}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="font-semibold text-gray-900">Preferred Pick-up Time</span>
+                            <span className="text-gray-600">{trackedOrder.preferredPickupTime}</span>
+                          </div>
+                          {['In Transit', 'Delivered'].includes(trackedOrder.status) && (
+                            <button className="text-blue-600 hover:text-blue-700 font-semibold text-xs mt-2 underline">
+                              View courier tracking
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Status Badge */}
+                    <div className="rounded-lg p-3 font-semibold text-white text-sm text-center">
+                      {trackedOrder.status === 'Verified' && (
+                        <div className="bg-blue-600">Waiting for Branch Staff</div>
+                      )}
+                      {trackedOrder.status === 'Processing' && (
+                        <div className="bg-blue-600">Order has been Printed, now preparing for Pick-up/Delivery</div>
+                      )}
+                      {trackedOrder.status === 'Ready for Pickup' && (
+                        <div className="bg-blue-600">Order is now in transit for delivery / ready for pick-up.</div>
+                      )}
+                      {trackedOrder.status === 'In Transit' && (
+                        <div className="bg-blue-600">Order is now in transit for delivery / ready for pick-up.</div>
+                      )}
+                      {trackedOrder.status === 'Delivered' && (
+                        <div className="bg-green-600">Order has been successfully delivered / picked up.</div>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {/* Pending Status */}
+                    <p className="text-gray-600 text-center text-sm font-medium mb-4">Awaiting Owner&apos;s approval...</p>
+                    <div className="bg-green-200 border border-green-300 rounded-lg p-3 text-center">
+                      <p className="text-green-800 font-semibold text-sm">Your order has been approved!</p>
+                    </div>
+                  </>
+                )}
               </div>
             )}
 
