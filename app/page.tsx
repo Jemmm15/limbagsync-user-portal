@@ -63,6 +63,8 @@ export default function LimbagSyncPortal() {
             onClick={() => {
               if (selectedPortal === 'customer') {
                 router.push('/customer');
+              } else if (selectedPortal === 'branch' || selectedPortal === 'owner') {
+                router.push('/staff-login');
               }
             }}
             className="w-full mt-10 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 rounded-xl transition-colors duration-200 text-lg"
